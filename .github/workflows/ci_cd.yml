@@ -47,7 +47,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            mg-fg-movie-shop-ci python -m pytest testing/src --junitxml=reports/test-results.xml
+            test-img bash -c "source /app/.venv/bin/activate && pytest testing/src --junitxml=reports/test-results.xml"
 
       # 5 Upload test results
       - name: Upload Test Results
