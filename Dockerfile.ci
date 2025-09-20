@@ -19,16 +19,22 @@ COPY movie_shop_backend/src ./src
 COPY movie_shop_backend/app_state.json .
 COPY testing ./testing
 
-# Instalar dependencias del proyecto y de testing con pip globalmente
-RUN pip install --upgrade pip
-RUN pip install python-dotenv pytest requests flake8 black pydantic>=2.0.0
+# Instalar dependencias con uv
+RUN uv sync --with uv --with uvicorn
+RUN uv pip install -r testing/requirements.txt # ✅ Usar uv para instalar dependencias de prueba
+
+
 
 # Crear directorio de datos y mover archivos de estado
 RUN mkdir -p data && mv app_state.json data/
 
+# ✅ Crear el directorio para los reportes de test
+RUN mkdir -p reports
+
 # Cambiar permisos y usuario
 RUN chown -R appuser:appuser /app
 USER appuser
+
 
 # Configurar variables de entorno
 ENV STATE_FILE=/app/data/app_state.json
