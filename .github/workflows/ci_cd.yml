@@ -27,7 +27,7 @@ jobs:
       # 3️ Run API container + Pytest
       - name: Run API + Tests
         run: |
-          docker run -d --rm -p 8000:8000 --name api_test mg-fg-movie-shop:ci
+          docker run -d --rm -p 8000:8000 --name api_test mg-fg-movie-shop-ci
           for i in {1..30}; do
             if curl -s http://localhost:8000/health > /dev/null; then
               echo "API is up!"
