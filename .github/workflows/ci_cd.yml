@@ -36,7 +36,7 @@ jobs:
             echo "Waiting for API..."
             sleep 2
           done
-          docker exec api_test pytest testing/src --junitxml=reports/test-results.xml
+          docker exec api_test python -m pytest testing/src --junitxml=reports/test-results.xml
           RESULT=$?
           docker stop api_test
           exit $RESULT
@@ -47,7 +47,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            mg-fg-movie-shop-ci pytest testing/src --junitxml=reports/test-results.xml
+            mg-fg-movie-shop-ci python -m pytest testing/src --junitxml=reports/test-results.xml
 
       # 5 Upload test results
       - name: Upload Test Results
