@@ -22,7 +22,7 @@ jobs:
       # 2️ Build Docker image
       - name: Build Docker Image
         run: |
-          docker build -f Dockerfile.ci -t mg-fg-movie-shop:ci .
+          docker build -f Dockerfile.ci -t mg-fg-movie-shop-ci .
 
       # 3️ Run API container + Pytest
       - name: Run API + Tests
@@ -47,11 +47,11 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -w /app \
-            my-image pytest testing/src --junitxml=reports/test-results.xml
+            mg-fg-movie-shop-ci pytest testing/src --junitxml=reports/test-results.xml
 
       # 5 Upload test results
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: reports/test-results.xml
+          path: testing/reports/test-results.xml
