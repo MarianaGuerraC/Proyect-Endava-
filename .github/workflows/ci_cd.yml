@@ -15,19 +15,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️ Checkout code
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️ Build Docker image
+      # 2️⃣ Build Docker image (solo si quieres actualizarla)
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile.ci -t mg-fg-movie-shop-ci .
 
-      # 3️ Run API container + Pytest
-      - name: Run API + Tests
+      # 3️⃣ Levantar API y correr tests
+      - name: Run API container + Pytest
         run: |
+
           docker run -d --rm -p 8000:8000 --name api_test mg-fg-movie-shop-ci
+          
+
           for i in {1..30}; do
             if curl -s http://localhost:8000/health > /dev/null; then
               echo "API is up!"
@@ -36,22 +39,17 @@ jobs:
             echo "Waiting for API..."
             sleep 2
           done
-          docker exec api_test python -m pytest testing/src --junitxml=reports/test-results.xml
+
+
+          docker exec api_test /app/.venv/bin/pytest testing/src --junitxml=/app/reports/test-results.xml
+
           RESULT=$?
           docker stop api_test
           exit $RESULT
 
-      # 4 Run tests in Docker
-      - name: Run Pytest in Docker
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            test-img bash -c "source /app/.venv/bin/activate && pytest testing/src --junitxml=reports/test-results.xml"
-
-      # 5 Upload test results
+      # 4️⃣ Subir resultados de tests como artifact
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: testing/reports/test-results.xml
+          path: reports/test-results.xml
