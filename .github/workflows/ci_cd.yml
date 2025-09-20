@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️ Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Build Docker image (solo si quieres actualizarla)
+      # 2️ Build Docker image (solo si quieres actualizarla)
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile.ci -t mg-fg-movie-shop-ci .
 
-      # 3️⃣ Levantar API y correr tests
+      # 3️ Levantar API y correr tests
       - name: Run API container + Pytest
         run: |
 
@@ -47,9 +47,9 @@ jobs:
           docker stop api_test
           exit $RESULT
 
-      # 4️⃣ Subir resultados de tests como artifact
+      # 4️ Subir resultados de tests como artifact
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: reports/test-results.xml
+          path: testing/reports/test-results.xml
