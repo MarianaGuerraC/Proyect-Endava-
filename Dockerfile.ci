@@ -5,10 +5,10 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema y uv
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc build-essential curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --platform x86_64-unknown-linux-musl --dest /usr/local/bin \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -20,21 +20,18 @@ COPY movie_shop_backend/app_state.json .
 COPY testing ./testing
 
 # Instalar dependencias con uv
+# ✅ uv ya está disponible en el PATH global
 RUN uv sync --with uv --with uvicorn
-RUN uv pip install -r testing/requirements.txt # ✅ Usar uv para instalar dependencias de prueba
-
-
+RUN uv pip install -r testing/requirements.txt
 
 # Crear directorio de datos y mover archivos de estado
 RUN mkdir -p data && mv app_state.json data/
-
-# ✅ Crear el directorio para los reportes de test
+# Crear el directorio para los reportes de test
 RUN mkdir -p reports
 
 # Cambiar permisos y usuario
 RUN chown -R appuser:appuser /app
 USER appuser
-
 
 # Configurar variables de entorno
 ENV STATE_FILE=/app/data/app_state.json
