@@ -6,6 +6,10 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Establecer directorio de trabajo:
 WORKDIR /app 
 
+
+# Instalar pytest globalmente para que siempre esté disponible
+RUN pip install pytest
+
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc build-essential curl ca-certificates \
