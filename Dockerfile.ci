@@ -1,47 +1,63 @@
+# Dockerfile.ci
+
 FROM python:3.12-slim
 
-# Usuario no-root
+# --------------------
+# Crear usuario no-root
+# --------------------
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
+# --------------------
 # Instalar dependencias del sistema
+# --------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc build-essential curl ca-certificates \
+    gcc build-essential curl ca-certificates bash \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Instalar uv en su ubicación predeterminada
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# --------------------
+# Instalar pip y librerías principales
+# --------------------
+RUN pip install --upgrade pip && \
+    pip install uv uvicorn fastapi pytest
 
-# Configurar el PATH para que `uv` esté disponible en los siguientes pasos
-ENV PATH="/root/.cargo/bin:$PATH"
+COPY testing/requirements.txt ./testing/requirements.txt
+RUN pip install -r testing/requirements.txt
 
+# --------------------
 # Copiar archivos del proyecto
+# --------------------
 COPY movie_shop_backend/pyproject.toml .
 COPY movie_shop_backend/uv.lock .
 COPY movie_shop_backend/src ./src
 COPY movie_shop_backend/app_state.json .
-COPY testing ./testing
+COPY testing ./testing  
 
-# Instalar dependencias con uv
-RUN uv sync --with uv --with uvicorn
-RUN uv pip install -r testing/requirements.txt
+# --------------------
+# Crear directorios de datos y reportes
+# --------------------
+RUN mkdir -p data reports && mv app_state.json data/
 
-# Crear directorio de datos y mover archivos de estado
-RUN mkdir -p data && mv app_state.json data/
-# Crear el directorio para los reportes de test
-RUN mkdir -p reports
-
-# Cambiar permisos y usuario
+# --------------------
+# Cambiar permisos y usar usuario no-root
+# --------------------
 RUN chown -R appuser:appuser /app
 USER appuser
 
-# Configurar variables de entorno
+# --------------------
+# Variables de entorno
+# --------------------
 ENV STATE_FILE=/app/data/app_state.json
 ENV PYTHONUNBUFFERED=1
-ENV UV_CACHE_DIR=/app/.uv-cache
 
+# --------------------
+# Exponer puerto para la API
+# --------------------
 EXPOSE 8000
 
-CMD ["uv", "run", "--with", "uvicorn", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --------------------
+# CMD para correr la API
+# --------------------
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
