@@ -11,20 +11,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Instalar uv por separado, en un solo paso
-ENV UV_INSTALL_DIR=/usr/local/bin
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --dest $UV_INSTALL_DIR
+# Instalar uv por separado, en su ubicación predeterminada
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN export PATH="/root/.cargo/bin:$PATH"
 
-# Copiar archivos del proyecto
 COPY movie_shop_backend/pyproject.toml .
 COPY movie_shop_backend/uv.lock .
 COPY movie_shop_backend/src ./src
 COPY movie_shop_backend/app_state.json .
 COPY testing ./testing
 
+
 # Instalar dependencias con uv
 RUN uv sync --with uv --with uvicorn
 RUN uv pip install -r testing/requirements.txt
+# Copiar archivos del proyecto
+
 
 # Crear directorio de datos y mover archivos de estado
 RUN mkdir -p data && mv app_state.json data/
