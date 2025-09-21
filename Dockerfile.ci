@@ -40,10 +40,13 @@ COPY testing ./testing
 # --------------------
 RUN mkdir -p data reports && mv app_state.json data/
 
+RUN mkdir -p /home/appuser/.cache/uv \
+    && chown -R appuser:appuser /home/appuser/.cache
 # --------------------
 # Cambiar permisos y usar usuario no-root
 # --------------------
-RUN chown -R appuser:appuser /app
+# Directorio de cache para uv
+ENV UV_CACHE_DIR=/home/appuser/.cache/uv
 USER appuser
 
 # --------------------
