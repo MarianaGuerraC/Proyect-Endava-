@@ -19,16 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️ Build Docker image (solo si quieres actualizarla)
+      # 2️ Build Docker image
       - name: Build Docker Image
         run: |
           docker build -f Dockerfile.ci -t mg-fg-movie-shop-ci .
 
       # 3️ Levantar API y correr tests
-      # 3️ Levantar API y correr tests
       - name: Run API container + Pytest
         run: |
-          docker run -d --rm -p 8000:8000 --name api_test mg-fg-movie-shop-ci
+          docker run -d -p 8000:8000 --name api_test mg-fg-movie-shop-ci
 
           for i in {1..30}; do
             if curl -s http://localhost:8000/health > /dev/null; then
@@ -37,18 +36,21 @@ jobs:
             fi
             echo "Waiting for API..."
             sleep 2
-            done
-
+          done
 
           docker exec api_test uv run pytest testing/src --junitxml=/app/reports/test-results.xml
 
-          RESULT=$?
-          docker stop api_test
-          exit $RESULT
+      # 4️ Copiar resultados del contenedor al runner
+      - name: Copy Test Results
+        run: docker cp api_test:/app/reports/test-results.xml ./test-results.xml
 
-      # 4️ Subir resultados de tests como artifact
+      # 5️ Subir resultados de tests como artifact
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: testing/reports/test-results.xml
+          path: ./test-results.xml
+
+      # 6️ Limpiar contenedor
+      - name: Stop and Remove Container
+        run: docker rm -f api_test
