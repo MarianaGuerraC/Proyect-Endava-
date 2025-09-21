@@ -5,12 +5,15 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 WORKDIR /app
 
-# Instalar dependencias del sistema y uv
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc build-essential curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --dest /usr/local/bin/ \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
+
+# Instalar uv por separado, en un solo paso
+ENV UV_INSTALL_DIR=/usr/local/bin
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --dest $UV_INSTALL_DIR
 
 # Copiar archivos del proyecto
 COPY movie_shop_backend/pyproject.toml .
@@ -20,7 +23,6 @@ COPY movie_shop_backend/app_state.json .
 COPY testing ./testing
 
 # Instalar dependencias con uv
-# ✅ uv ya está disponible en el PATH global
 RUN uv sync --with uv --with uvicorn
 RUN uv pip install -r testing/requirements.txt
 
