@@ -8,7 +8,7 @@ WORKDIR /app
 # Instalar dependencias del sistema y uv
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc build-essential curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --platform x86_64-unknown-linux-musl --dest /usr/local/bin \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --dest /usr/local/bin/ \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
