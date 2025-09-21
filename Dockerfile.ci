@@ -48,6 +48,7 @@ RUN mkdir -p /home/appuser/.cache/uv \
 # Directorio de cache para uv
 ENV UV_CACHE_DIR=/home/appuser/.cache/uv
 ENV XDG_CACHE_HOME=/home/appuser/.cache
+RUN chown -R appuser:appuser /app
 USER appuser
 
 # --------------------
